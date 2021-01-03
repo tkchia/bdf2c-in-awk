@@ -54,7 +54,7 @@ function new_char()
 {
 	curr_height = 0
 	rows_left = 0
-	curr_code = 0
+	curr_code = -1
 	curr_bitmap = ""
 }
 
@@ -87,7 +87,7 @@ BEGIN {
 
 /^[ \t]*ENCODING[ \t]+/ {
 	curr_code = $2 + 0
-	if (curr_code <= 0)
+	if (curr_code < 0)
 		error("bad code point " curr_code)
 	next
 }
@@ -109,7 +109,7 @@ BEGIN {
 }
 
 /^[ \t]*ENDCHAR[ \t]*$/ {
-	if (curr_code == 0)
+	if (curr_code < 0)
 		error("code point undefined")
 	if (curr_bitmap == "")
 		error("bitmap undefined")
