@@ -153,8 +153,8 @@ END {
 		N = "default"
 	print "/****** AUTOMATICALLY GENERATED ******/"
 	if (H) {
-		print "#ifndef H_FONT_" N
-		print "#define H_FONT_" N
+		print "#ifndef H_FONT_" toupper(N)
+		print "#define H_FONT_" toupper(N)
 		print "#include <inttypes.h>"
 		print "#include <wchar.h>"
 		print "#define FONT_" toupper(N) "_GLYPHS " n_codes
