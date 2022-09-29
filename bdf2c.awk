@@ -100,6 +100,9 @@ BEGIN {
 	if (NONASCII == "")
 		NONASCII = 1
 	NONASCII += 0
+	if (NONWGL4 == "")
+		NONWGL4 = 1
+	NONWGL4 += 0
 	if (PUA == "")
 		PUA = 1
 	PUA += 0
@@ -175,6 +178,21 @@ BEGIN {
 	if (!NONASCII && (curr_code < hex("20") || curr_code > hex("7f"))) {
 		new_char()
 		next
+	}
+	if (!NONWGL4) {
+		wgl4 = 0
+		if ((curr_code >= hex("0020") && curr_code <= hex("01ff")) ||
+		    (curr_code >= hex("02c0") && curr_code <= hex("02df")) ||
+		    (curr_code >= hex("0380") && curr_code <= hex("03cf")) ||
+		    (curr_code >= hex("0400") && curr_code <= hex("049f")) ||
+		    (curr_code >= hex("1e80") && curr_code <= hex("266f")) ||
+		    (curr_code >= hex("f001") && curr_code <= hex("f002")) ||
+		    (curr_code >= hex("fb01") && curr_code <= hex("fb02")))
+			wgl4 = 1
+		if (!wgl4) {
+			new_char()
+			next
+		}
 	}
 	if (!SP && curr_code > hex("ffff")) {
 		new_char()
@@ -258,7 +276,7 @@ END {
 		for (i = 1; i <= n_codes; i += 1) {
 			curr_code = codes[i]
 			print "  { /* " curr_code " */"
-			print bitmap[curr_code], "  },"
+			print bitmap[curr_code] "  },"
 		}
 		print "};"
 	}

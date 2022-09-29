@@ -11,6 +11,7 @@ This is a simplistic [AWK](http://awklang.org/) program, to convert one or more 
 | --------------- | -------
 | `H=1`           | Output a header file (`.h`) with external references to the code points table and font data.  Default is to output a C source file (`.c`) with the actual data.
 | `NONASCII=0`    | Exclude all glyphs not in the printable ASCII range.
+| `NONWGL4=0`     | Exclude (most) glyphs not in Microsoft's [Windows Glyph List 4](https://learn.microsoft.com/en-us/typography/opentype/otspec180/wgl4).
 | `PUA=0`         | Exclude glyphs in Unicode Private Use Areas.
 | `SP=0`          | Exclude glyphs in Unicode supplementary planes.
 | `BRAILLE=0`     | Exclude glyphs in Unicode's Braille Patterns block.
