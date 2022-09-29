@@ -113,6 +113,7 @@ BEGIN {
 	err_msg = ""
 	n_codes = 0
 	max_height = 0
+	max_code = 0
 	new_char()
 }
 
@@ -199,6 +200,8 @@ BEGIN {
 	codes[n_codes] = curr_code
 	code_seen[curr_code] = 1
 	bitmap[curr_code] = curr_bitmap
+	if (max_code < curr_code)
+		max_code = curr_code
 	new_char()
 	next
 }
@@ -225,23 +228,28 @@ END {
 		print " * Font information:" comments
 	}
 	print " */"
+	if (max_code <= hex("ffff"))
+		code_type = "char16_t"
+	else
+		code_type = "char32_t"
 	if (H) {
 		print "#ifndef H_FONT_" toupper(N)
 		print "#define H_FONT_" toupper(N)
 		print "#include <inttypes.h>"
-		print "#include <wchar.h>"
+		print "#include <uchar.h>"
 		print "#define FONT_" toupper(N) "_GLYPHS " n_codes
 		print "#define FONT_" toupper(N) "_WIDTH 8"
 		print "#define FONT_" toupper(N) "_HEIGHT " max_height
-		print "extern const wchar_t " \
+		print "extern const " code_type " " \
 			  "font_" N "_code_points[" n_codes "];"
 		print "extern const uint8_t " \
 			  "font_" N "_data[" n_codes "][" max_height "];"
 		print "#endif"
 	} else {
 		print "#include <inttypes.h>"
-		print "#include <wchar.h>"
-		print "const wchar_t font_" N "_code_points[" n_codes "] = {"
+		print "#include <uchar.h>"
+		print "const " code_type " " \
+		      "font_" N "_code_points[" n_codes "] = {"
 		for (i = 1; i <= n_codes; i += 1)
 			print "  " codes[i] ","
 		print "};"
