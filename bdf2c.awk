@@ -84,6 +84,17 @@ function hex(digits, \
 	return value
 }
 
+function basename(path, \
+		  i)
+{
+	i = index(path, "/")
+	while (i != 0) {
+		path = substr(path, i + 1)
+		i = index(path, "/")
+	}
+	return path
+}
+
 BEGIN {
 	H += 0
 	if (NONASCII == "")
@@ -98,10 +109,21 @@ BEGIN {
 	if (BRAILLE == "")
 		BRAILLE = 1
 	BRAILLE += 0
+	comments = ""
 	err_msg = ""
 	n_codes = 0
 	max_height = 0
 	new_char()
+}
+
+/^[ \t]*(COMMENT|COPYRIGHT)$/ {
+	sub(/^[ \t]+/, "")
+	comments = comments "\n * " $0
+}
+
+/^[ \t]*(COMMENT|COPYRIGHT)[ \t]/ {
+	sub(/^[ \t]+/, "")
+	comments = comments "\n * " $0
 }
 
 /^[ \t]*[0123456789abcdefABCDEF]+[ \t]*$/ {
@@ -109,7 +131,14 @@ BEGIN {
 		rows_left -= 1
 		if (length($1) != 2)
 			error("bitmap too wide or too narrow")
-		curr_bitmap = curr_bitmap "\t\t0x" tolower($1) ",\n"
+		bits = hex($1)
+		line = " */\n"
+		for (i = 0; i < 8; i += 1) {
+			line = (bits % 2 ? "#" : ".") line
+			bits = int(bits / 2)
+		}
+		line = "    0x" tolower($1) ", /* " line
+		curr_bitmap = curr_bitmap line
 		next
 	}
 }
@@ -188,7 +217,14 @@ END {
 	mergesort(codes, codes, 1, n_codes)
 	if (N == "")
 		N = "default"
-	print "/****** AUTOMATICALLY GENERATED ******/"
+	print "/* ****** AUTOMATICALLY GENERATED ******"
+	print " * by bdf2c-in-awk  https://gitlab.com/tkchia/bdf2c-in-awk"
+	print " * from " basename(FILENAME)
+	if (comments != "") {
+		print " * "
+		print " * Font information:" comments
+	}
+	print " */"
 	if (H) {
 		print "#ifndef H_FONT_" toupper(N)
 		print "#define H_FONT_" toupper(N)
@@ -207,14 +243,14 @@ END {
 		print "#include <wchar.h>"
 		print "const wchar_t font_" N "_code_points[" n_codes "] = {"
 		for (i = 1; i <= n_codes; i += 1)
-			print "\t" codes[i] ","
+			print "  " codes[i] ","
 		print "};"
 		print "const uint8_t font_" N "_data[" n_codes \
 						       "][" max_height "] = {"
 		for (i = 1; i <= n_codes; i += 1) {
 			curr_code = codes[i]
-			print "\t{"
-			print bitmap[curr_code], "\t},"
+			print "  { /* " curr_code " */"
+			print bitmap[curr_code], "  },"
 		}
 		print "};"
 	}
