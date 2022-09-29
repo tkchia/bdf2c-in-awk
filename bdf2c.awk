@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# Copyright (c) 2020--2021 TK Chia
+# Copyright (c) 2020--2022 TK Chia
 #
 # This file is free software; you can redistribute it and/or modify it under
 # the terms of the GNU General Public License as published by the Free
@@ -58,8 +58,37 @@ function new_char()
 	curr_bitmap = ""
 }
 
+# One True Awk 20180827 (mis)parses `0xff' as `0' `xff', i.e. a string
+# concatenation operation.  Work around this.
+function hex(digits, \
+	     value, i, d, n, a)
+{
+	if (cached_hex_value[digits] != "")
+		return cached_hex_value[digits]
+	if (cached_hex_value["1"] != 1) {
+		a = "0123456789abcdef"
+		for (i = 0; i < 16; i += 1) {
+			d = substr(a, i + 1, 1)
+			cached_hex_value[d] = i
+			cached_hex_value[toupper(d)] = i
+		}
+	}
+	value = 0
+	n = length(digits)
+	for (i = 1; i <= n; i += 1) {
+		d = substr(digits, i, 1)
+		value *= 16
+		value += cached_hex_value[d]
+	}
+	cached_hex_value[digits] = value
+	return value
+}
+
 BEGIN {
 	H += 0
+	if (NONASCII == "")
+		NONASCII = 1
+	NONASCII += 0
 	if (PUA == "")
 		PUA = 1
 	PUA += 0
@@ -113,17 +142,25 @@ BEGIN {
 		error("code point undefined")
 	if (curr_bitmap == "")
 		error("bitmap undefined")
-	if (!SP && curr_code > 0xffff) {
+	if (!NONASCII && (curr_code < hex("20") || curr_code > hex("7f"))) {
 		new_char()
 		next
 	}
-	if (!PUA && ((curr_code >= 0x00e000 && curr_code <= 0x00f8ff) ||
-		     (curr_code >= 0x0f0000 && curr_code <= 0x0ffffd) ||
-		     (curr_code >= 0x100000 && curr_code <= 0x10fffd))) {
+	if (!SP && curr_code > hex("ffff")) {
 		new_char()
 		next
 	}
-	if (!BRAILLE && (curr_code >= 0x2800 && curr_code <= 0x28ff)) {
+	if (!PUA && ((curr_code >= hex("00e000") &&
+		      curr_code <= hex("00f8ff")) ||
+		     (curr_code >= hex("0f0000") &&
+		      curr_code <= hex("0ffffd")) ||
+		     (curr_code >= hex("100000") &&
+		      curr_code <= hex("10fffd")))) {
+		new_char()
+		next
+	}
+	if (!BRAILLE && (curr_code >= hex("2800") && curr_code <= hex("28ff")))
+	{
 		new_char()
 		next
 	}

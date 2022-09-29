@@ -10,6 +10,7 @@ This is a simplistic [AWK](http://awklang.org/) program, to convert one or more 
 | Option          | Meaning 
 | --------------- | -------
 | `H=1`           | Output a header file (`.h`) with external references to the code points table and font data.  Default is to output a C source file (`.c`) with the actual data.
+| `NONASCII=0`    | Exclude all glyphs not in the printable ASCII range.
 | `PUA=0`         | Exclude glyphs in Unicode Private Use Areas.
 | `SP=0`          | Exclude glyphs in Unicode supplementary planes.
 | `BRAILLE=0`     | Exclude glyphs in Unicode's Braille Patterns block.
