@@ -19,4 +19,4 @@ This is a simplistic [AWK](http://awklang.org/) program, to convert one or more 
 
 ## License
 
-`bdf2c.awk` is distributed under the [GNU General Public License version 2](LICENSE) or above.
+`bdf2c.awk` is distributed under the [3-clause BSD License](LICENSE).
