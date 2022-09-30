@@ -120,6 +120,7 @@ function tidy_args( \
 BEGIN {
 	H += 0
 	S += 0
+	D += 0
 	if (NONASCII == "")
 		NONASCII = 1
 	NONASCII += 0
@@ -287,19 +288,31 @@ END {
 		print "#define FONT_" toupper(N) "_GLYPHS " n_codes
 		print "#define FONT_" toupper(N) "_WIDTH 8"
 		print "#define FONT_" toupper(N) "_HEIGHT " max_height
-		print "extern const " code_type " " \
-			  "font_" N "_code_points[" n_codes "];"
+		if (D)
+			print "extern const " code_type " " \
+				  "font_" N "_code_glyph_diffs[" n_codes "];"
+		else
+			print "extern const " code_type " " \
+				  "font_" N "_code_points[" n_codes "];"
 		print "extern const uint8_t " \
 			  "font_" N "_data[" n_codes "][" max_height "];"
 		print "#endif"
 	} else {
 		print "#include <inttypes.h>"
 		print "#include <uchar.h>"
-		print "const " code_type " " \
-		      "font_" N "_code_points[" n_codes "] = {"
-		for (i = 1; i <= n_codes; i += 1)
-			print "  " codes[i] ","
-		print "};"
+		if (D) {
+			print "const " code_type " " \
+			      "font_" N "_code_glyph_diffs[" n_codes "] = {"
+			for (i = 1; i <= n_codes; i += 1)
+				print "  " (codes[i] - (i - 1)) ","
+			print "};"
+		} else {
+			print "const " code_type " " \
+			      "font_" N "_code_points[" n_codes "] = {"
+			for (i = 1; i <= n_codes; i += 1)
+				print "  " codes[i] ","
+			print "};"
+		}
 		print "const uint8_t font_" N "_data[" n_codes \
 						       "][" max_height "] = {"
 		for (i = 1; i <= n_codes; i += 1) {
