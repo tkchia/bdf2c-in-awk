@@ -98,19 +98,28 @@ function hex(digits, \
 	return value
 }
 
-function basename(path, \
-		  i)
+function tidy_args( \
+		   i, j, arg)
 {
-	i = index(path, "/")
-	while (i != 0) {
-		path = substr(path, i + 1)
-		i = index(path, "/")
+	args = ""
+	for (i = 1; i < ARGC; i += 1) {
+		arg = ARGV[i]
+		j = index(arg, "/")
+		if (!j)
+			args = args " " arg
+		else {
+			do {
+				arg = substr(arg, j + 1)
+				j = index(arg, "/")
+			} while (j != 0)
+			args = args " .../" arg
+		}
 	}
-	return path
 }
 
 BEGIN {
 	H += 0
+	S += 0
 	if (NONASCII == "")
 		NONASCII = 1
 	NONASCII += 0
@@ -120,9 +129,13 @@ BEGIN {
 	if (PUA == "")
 		PUA = 1
 	PUA += 0
-	if (SP == "")
-		SP = 1
-	SP += 0
+	if (S)
+		SP = 0
+	else {
+		if (SP == "")
+			SP = 1
+		SP += 0
+	}
 	if (BRAILLE == "")
 		BRAILLE = 1
 	BRAILLE += 0
@@ -252,15 +265,17 @@ END {
 	mergesort(codes, codes, 1, n_codes)
 	if (N == "")
 		N = "default"
+	tidy_args()
 	print "/* ****** AUTOMATICALLY GENERATED ******"
 	print " * by bdf2c-in-awk  https://gitlab.com/tkchia/bdf2c-in-awk"
-	print " * from " basename(FILENAME)
+	print " *"
+	print " * Command line arguments:" args
 	if (comments != "") {
 		print " * "
 		print " * Font information:" comments
 	}
 	print " */"
-	if (max_code <= hex("ffff"))
+	if (S)
 		code_type = "char16_t"
 	else
 		code_type = "char32_t"
