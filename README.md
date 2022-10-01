@@ -13,6 +13,7 @@ This is a simplistic [AWK](http://awklang.org/) program, to convert one or more 
 | `S=1`           | Output 16-bit code points (`char16_t`), not 32-bit ones (`char32_t`).  This implies `SP=0` (see below).
 | `D=1`           | Output an array of differences between code points and glyph positions — which should be easier to compress, but just as searchable — instead of an array of code points.
 | `NONASCII=0`    | Exclude all glyphs not in the printable ASCII range.
+| `NONCP437=0`    | Exclude glyphs which do not map easily to the classical Code Page 437 character set ([1](https://learn.microsoft.com/en-us/previous-versions/cc195060(v=msdn.10)?redirectedfrom=MSDN), [2](https://www.unicode.org/Public/MAPPINGS/VENDORS/MISC/IBMGRAPH.TXT)).
 | `NONWGL4=0`     | Exclude (most) glyphs not in Microsoft's [Windows Glyph List 4](https://learn.microsoft.com/en-us/typography/opentype/otspec180/wgl4).
 | `PUA=0`         | Exclude glyphs in Unicode Private Use Areas.
 | `SP=0`          | Exclude glyphs in Unicode supplementary planes.

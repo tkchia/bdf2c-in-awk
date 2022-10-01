@@ -98,6 +98,71 @@ function hex(digits, \
 	return value
 }
 
+function do_init_cp437_map(u1, u2, u3, u4)
+{
+	is_cp437[hex(u1)] = is_cp437[hex(u2)] = 1
+	is_cp437[hex(u3)] = is_cp437[hex(u4)] = 1
+}
+
+function init_cp437_map( \
+			i, e)
+{
+	e = hex("007e")
+	for (i = 0; i <= e; i += 1)
+		is_cp437[i] = 1
+	do_init_cp437_map("00a0",  "263a", "236b", "2665")
+	do_init_cp437_map("2666",  "2663", "2660", "2022")
+	do_init_cp437_map("25d8",  "25cb", "25d9", "2642")
+	do_init_cp437_map("2640",  "266a", "266b", "263c")
+	do_init_cp437_map("25ba",  "25c4", "2195", "203c")
+	do_init_cp437_map("00b6",  "00a7", "25ac", "21a8")
+	do_init_cp437_map("2191",  "2193", "2192", "2190")
+	do_init_cp437_map("221f",  "2194", "25b2", "25bc")
+	do_init_cp437_map("201c",  "201d", "2018", "2019")  # quotation marks
+	do_init_cp437_map("2047",  "00a6", "2302", "0394")  # ?, |, house
+	do_init_cp437_map("00c7",  "00fc", "00e9", "00e2")
+	do_init_cp437_map("00e4",  "00e0", "00e5", "00e7")
+	do_init_cp437_map("00ea",  "00eb", "00e8", "00ef")
+	do_init_cp437_map("00ee",  "00ec", "00c4", "00c5")
+	do_init_cp437_map("00c9",  "00e6", "00c6", "00f4")
+	do_init_cp437_map("00f6",  "00f2", "00fb", "00f9")
+	do_init_cp437_map("00ff",  "00d6", "00dc", "00a2")
+	do_init_cp437_map("00a3",  "00a5", "20ac", "0192")
+	do_init_cp437_map("0000",  "2205", "2400", "20a7")  # null, peseta
+	do_init_cp437_map("00e1",  "00ed", "00f3", "00fa")
+	do_init_cp437_map("00f1",  "00d1", "00aa", "00ba")
+	do_init_cp437_map("00bf",  "2310", "00ac", "00bd")
+	do_init_cp437_map("00bc",  "00a1", "00ab", "00bb")
+	do_init_cp437_map("2591",  "2592", "2593", "2502")
+	do_init_cp437_map("2524",  "2561", "2562", "2556")
+	do_init_cp437_map("2555",  "2563", "2551", "2557")
+	do_init_cp437_map("255d",  "255c", "255b", "2510")
+	do_init_cp437_map("2514",  "2534", "252c", "251c")
+	do_init_cp437_map("2500",  "253c", "255e", "255f")
+	do_init_cp437_map("255a",  "2554", "2569", "2566")
+	do_init_cp437_map("2560",  "2550", "256c", "2567")
+	do_init_cp437_map("2568",  "2564", "2565", "2559")
+	do_init_cp437_map("2558",  "2552", "2553", "256b")
+	do_init_cp437_map("256a",  "2518", "250c", "2588")
+	do_init_cp437_map("2584",  "258c", "2590", "2580")
+	do_init_cp437_map("03b1",  "00df", "0393", "03c0")
+	do_init_cp437_map("23ae",  "03b2", "03a0", "220f")  # integral extn.,
+							    # beta, pi
+	do_init_cp437_map("03a3",  "03c3", "03bc", "03c4")
+	do_init_cp437_map("03a6",  "0398", "03a9", "03b4")
+	do_init_cp437_map("2211",  "00b5", "2126", "2202")  # Sigma, mu, Omega,
+							    # delta
+	do_init_cp437_map("221e",  "03c6", "03b5", "2229")
+	do_init_cp437_map("03d5", "1d719", "2208", "220a")  # phi, epsilon
+	do_init_cp437_map("2261",  "00b1", "2265", "2264")
+	do_init_cp437_map("2320",  "2321", "00f7", "2248")
+	do_init_cp437_map("00b0",  "2219", "00d7", "221a")
+	do_init_cp437_map("207f",  "00b2", "25a0", "03bb")
+	do_init_cp437_map("017f",  "00b7", "2713", "266c")  # long s, inter-
+							    # punct, check
+							    # mark, semiquavers
+}
+
 function tidy_args( \
 		   i, j, arg)
 {
@@ -124,6 +189,9 @@ BEGIN {
 	if (NONASCII == "")
 		NONASCII = 1
 	NONASCII += 0
+	if (NONCP437 == "")
+		NONCP437 = 1
+	NONCP437 += 0
 	if (NONWGL4 == "")
 		NONWGL4 = 1
 	NONWGL4 += 0
@@ -140,6 +208,7 @@ BEGIN {
 	if (BRAILLE == "")
 		BRAILLE = 1
 	BRAILLE += 0
+	init_cp437_map()
 	comments = ""
 	err_msg = ""
 	n_codes = 0
@@ -204,6 +273,10 @@ BEGIN {
 	if (curr_bitmap == "")
 		error("bitmap undefined")
 	if (!NONASCII && (curr_code < hex("20") || curr_code > hex("7f"))) {
+		new_char()
+		next
+	}
+	if (!NONCP437 && !(curr_code in is_cp437)) {
 		new_char()
 		next
 	}
