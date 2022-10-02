@@ -191,6 +191,7 @@ BEGIN {
 	err_msg = ""
 	n_codes = 0
 	max_height = 0
+	comments = ""
 	max_code = 0
 	min_code = ""
 	new_char()
@@ -201,6 +202,7 @@ BEGIN {
 	S += 0
 	D += 0
 	SPARSE += 0
+	COSMO += 0
 	if (NONASCII == "")
 		NONASCII = 1
 	NONASCII += 0
@@ -223,7 +225,6 @@ BEGIN {
 	if (BRAILLE == "")
 		BRAILLE = 1
 	BRAILLE += 0
-	comments = ""
 }
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)$/ {
@@ -356,7 +357,8 @@ END {
 	print "/* ****** AUTOMATICALLY GENERATED ******"
 	print " * by bdf2c-in-awk  https://gitlab.com/tkchia/bdf2c-in-awk"
 	print " *"
-	print " * Command line arguments:" args
+	print " * Command line arguments:"
+	print " *" args
 	if (comments != "") {
 		print " * "
 		print " * Font information:" comments
@@ -376,9 +378,11 @@ END {
 	if (H) {
 		print "#ifndef H_FONT_" toupper(N)
 		print "#define H_FONT_" toupper(N)
-		print "#include <inttypes.h>"
-		if (!SPARSE)
-			print "#include <uchar.h>"
+		if (!COSMO) {
+			print "#include <inttypes.h>"
+			if (!SPARSE)
+				print "#include <uchar.h>"
+		}
 		print "#define FONT_" toupper(N) "_GLYPHS " n_codes
 		print "#define FONT_" toupper(N) "_WIDTH 8"
 		print "#define FONT_" toupper(N) "_HEIGHT " max_height
@@ -403,7 +407,8 @@ END {
 		}
 		print "#endif"
 	} else {
-		print "#include <inttypes.h>"
+		if (!COSMO)
+			print "#include <inttypes.h>"
 		if (SPARSE) {
 			print "const uint8_t " X "font_" N "_direct[" \
 					       (max_code - min_code + 1) "][" \
