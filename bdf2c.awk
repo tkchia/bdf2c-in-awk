@@ -186,6 +186,7 @@ BEGIN {
 	H += 0
 	S += 0
 	D += 0
+	SPARSE += 0
 	if (NONASCII == "")
 		NONASCII = 1
 	NONASCII += 0
@@ -214,15 +215,16 @@ BEGIN {
 	n_codes = 0
 	max_height = 0
 	max_code = 0
+	min_code = ""
 	new_char()
 }
 
-/^[ \t]*(COMMENT|COPYRIGHT)$/ {
+/^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)$/ {
 	sub(/^[ \t]+/, "")
 	comments = comments "\n * " $0
 }
 
-/^[ \t]*(COMMENT|COPYRIGHT)[ \t]/ {
+/^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)[ \t]/ {
 	sub(/^[ \t]+/, "")
 	comments = comments "\n * " $0
 }
@@ -321,6 +323,8 @@ BEGIN {
 	bitmap[curr_code] = curr_bitmap
 	if (max_code < curr_code)
 		max_code = curr_code
+	if (min_code == "" || min_code > curr_code)
+		min_code = curr_code
 	new_char()
 	next
 }
@@ -357,42 +361,68 @@ END {
 		print "#ifndef H_FONT_" toupper(N)
 		print "#define H_FONT_" toupper(N)
 		print "#include <inttypes.h>"
-		print "#include <uchar.h>"
+		if (!SPARSE)
+			print "#include <uchar.h>"
 		print "#define FONT_" toupper(N) "_GLYPHS " n_codes
 		print "#define FONT_" toupper(N) "_WIDTH 8"
 		print "#define FONT_" toupper(N) "_HEIGHT " max_height
-		if (D)
-			print "extern const " code_type " " \
-				  "font_" N "_code_glyph_diffs[" n_codes "];"
-		else
-			print "extern const " code_type " " \
-				  "font_" N "_code_points[" n_codes "];"
-		print "extern const uint8_t " \
-			  "font_" N "_data[" n_codes "][" max_height "];"
+		if (SPARSE) {
+			print "#define FONT_" toupper(N) "_DIRECT_OFFSET " \
+			      min_code
+			print "extern const uint8_t font_" N "_direct[" \
+						    (max_code - min_code + 1) \
+						    "][" max_height "];"
+		} else {
+			if (D)
+				print "extern const " code_type " " \
+					  "font_" N "_code_glyph_diffs[" \
+						    n_codes "];"
+			else
+				print "extern const " code_type " " \
+					  "font_" N "_code_points[" \
+						    n_codes "];"
+			print "extern const uint8_t " \
+				  "font_" N "_data[" n_codes "][" \
+						     max_height "];"
+		}
 		print "#endif"
 	} else {
 		print "#include <inttypes.h>"
-		print "#include <uchar.h>"
-		if (D) {
-			print "const " code_type " " \
-			      "font_" N "_code_glyph_diffs[" n_codes "] = {"
-			for (i = 1; i <= n_codes; i += 1)
-				print "  " (codes[i] - (i - 1)) ","
+		if (SPARSE) {
+			print "const uint8_t font_" N "_direct[" \
+					     (max_code - min_code + 1) "][" \
+					     max_height "] = {"
+			for (i = 1; i <= n_codes; i += 1) {
+				curr_code = codes[i]
+				print "  [" (curr_code - min_code) \
+					"] = { /* " curr_code " */"
+				print bitmap[curr_code] "  },"
+			}
 			print "};"
 		} else {
-			print "const " code_type " " \
-			      "font_" N "_code_points[" n_codes "] = {"
-			for (i = 1; i <= n_codes; i += 1)
-				print "  " codes[i] ","
+			if (D) {
+				print "#include <uchar.h>"
+				print "const " code_type " " \
+				      "font_" N "_code_glyph_diffs[" \
+						n_codes "] = {"
+				for (i = 1; i <= n_codes; i += 1)
+					print "  " (codes[i] - (i - 1)) ","
+				print "};"
+			} else {
+				print "const " code_type " " \
+				      "font_" N "_code_points[" n_codes "] = {"
+				for (i = 1; i <= n_codes; i += 1)
+					print "  " codes[i] ","
+				print "};"
+			}
+			print "const uint8_t font_" N "_data[" n_codes "][" \
+						      max_height "] = {"
+			for (i = 1; i <= n_codes; i += 1) {
+				curr_code = codes[i]
+				print "  { /* " curr_code " */"
+				print bitmap[curr_code] "  },"
+			}
 			print "};"
 		}
-		print "const uint8_t font_" N "_data[" n_codes \
-						       "][" max_height "] = {"
-		for (i = 1; i <= n_codes; i += 1) {
-			curr_code = codes[i]
-			print "  { /* " curr_code " */"
-			print bitmap[curr_code] "  },"
-		}
-		print "};"
 	}
 }
