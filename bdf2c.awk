@@ -169,20 +169,34 @@ function tidy_args( \
 	args = ""
 	for (i = 1; i < ARGC; i += 1) {
 		arg = ARGV[i]
-		j = index(arg, "/")
-		if (!j)
-			args = args " " arg
+		if (arg ~ /^C=/)
+			args = args " C=..."
 		else {
-			do {
-				arg = substr(arg, j + 1)
-				j = index(arg, "/")
-			} while (j != 0)
-			args = args " .../" arg
+			j = index(arg, "/")
+			if (!j)
+				args = args " " arg
+			else {
+				do {
+					arg = substr(arg, j + 1)
+					j = index(arg, "/")
+				} while (j != 0)
+				args = args " .../" arg
+			}
 		}
 	}
 }
 
 BEGIN {
+	init_cp437_map()
+	err_msg = ""
+	n_codes = 0
+	max_height = 0
+	max_code = 0
+	min_code = ""
+	new_char()
+}
+
+(NR == 1) {
 	H += 0
 	S += 0
 	D += 0
@@ -209,23 +223,18 @@ BEGIN {
 	if (BRAILLE == "")
 		BRAILLE = 1
 	BRAILLE += 0
-	init_cp437_map()
 	comments = ""
-	err_msg = ""
-	n_codes = 0
-	max_height = 0
-	max_code = 0
-	min_code = ""
-	new_char()
 }
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)$/ {
 	sub(/^[ \t]+/, "")
+	gsub(/\*\//, "*\\/")
 	comments = comments "\n * " $0
 }
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)[ \t]/ {
 	sub(/^[ \t]+/, "")
+	gsub(/\*\//, "*\\/")
 	comments = comments "\n * " $0
 }
 
@@ -351,6 +360,13 @@ END {
 	if (comments != "") {
 		print " * "
 		print " * Font information:" comments
+	}
+	if (C != "") {
+		gsub(/\n/, "\n * + ", C)
+		gsub(/\*\//, "*\\/", C)
+		print " * "
+		print " * Extra comments:"
+		print " * + " C
 	}
 	print " */"
 	if (S)

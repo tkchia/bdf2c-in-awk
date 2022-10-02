@@ -17,6 +17,7 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 | `SPARSE=1`      | Output only a single sparse array of glyphs, indexed by code point.
 |                 |
 | `N=`_font-name_ | Set the font name to use when defining the C constants.  _font-name_ should comprise C identifier characters.
+| `C=`_comments_  | Extra comments to include in C code.
 |                 |
 | `NONASCII=0`    | Exclude all glyphs not in the printable ASCII range.
 | `NONCP437=0`    | Exclude glyphs which do not map easily to the classical Code Page 437 character set ([1](https://learn.microsoft.com/en-us/previous-versions/cc195060(v=msdn.10)?redirectedfrom=MSDN), [2](https://www.unicode.org/Public/MAPPINGS/VENDORS/MISC/IBMGRAPH.TXT)).
