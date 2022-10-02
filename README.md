@@ -17,6 +17,7 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 | `SPARSE=1`      | Output only a single sparse array of glyphs, indexed by code point.
 |                 |
 | `N=`_font-name_ | Set the font name to use when defining the C constants.  _font-name_ should comprise C identifier characters.
+| `X=`_prefix_    | Prefix for externally visible C identifiers.  _prefix should comprise C identifier characters.
 | `C=`_comments_  | Extra comments to include in C code.
 |                 |
 | `NONASCII=0`    | Exclude all glyphs not in the printable ASCII range.

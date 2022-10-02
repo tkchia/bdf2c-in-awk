@@ -385,29 +385,29 @@ END {
 		if (SPARSE) {
 			print "#define FONT_" toupper(N) "_DIRECT_OFFSET " \
 			      min_code
-			print "extern const uint8_t font_" N "_direct[" \
+			print "extern const uint8_t " X "font_" N "_direct[" \
 						    (max_code - min_code + 1) \
 						    "][" max_height "];"
 		} else {
 			if (D)
 				print "extern const " code_type " " \
-					  "font_" N "_code_glyph_diffs[" \
-						    n_codes "];"
+					  X "font_" N "_code_glyph_diffs[" \
+						      n_codes "];"
 			else
 				print "extern const " code_type " " \
-					  "font_" N "_code_points[" \
-						    n_codes "];"
+					  X "font_" N "_code_points[" \
+						      n_codes "];"
 			print "extern const uint8_t " \
-				  "font_" N "_data[" n_codes "][" \
-						     max_height "];"
+				  X "font_" N "_data[" n_codes "][" \
+						       max_height "];"
 		}
 		print "#endif"
 	} else {
 		print "#include <inttypes.h>"
 		if (SPARSE) {
-			print "const uint8_t font_" N "_direct[" \
-					     (max_code - min_code + 1) "][" \
-					     max_height "] = {"
+			print "const uint8_t " X "font_" N "_direct[" \
+					       (max_code - min_code + 1) "][" \
+					       max_height "] = {"
 			for (i = 1; i <= n_codes; i += 1) {
 				curr_code = codes[i]
 				print "  [" (curr_code - min_code) \
@@ -419,20 +419,21 @@ END {
 			if (D) {
 				print "#include <uchar.h>"
 				print "const " code_type " " \
-				      "font_" N "_code_glyph_diffs[" \
-						n_codes "] = {"
+				      X "font_" N "_code_glyph_diffs[" \
+						  n_codes "] = {"
 				for (i = 1; i <= n_codes; i += 1)
 					print "  " (codes[i] - (i - 1)) ","
 				print "};"
 			} else {
 				print "const " code_type " " \
-				      "font_" N "_code_points[" n_codes "] = {"
+				      X "font_" N "_code_points[" n_codes \
+							      "] = {"
 				for (i = 1; i <= n_codes; i += 1)
 					print "  " codes[i] ","
 				print "};"
 			}
-			print "const uint8_t font_" N "_data[" n_codes "][" \
-						      max_height "] = {"
+			print "const uint8_t " X "font_" N "_data[" n_codes \
+					       "][" max_height "] = {"
 			for (i = 1; i <= n_codes; i += 1) {
 				curr_code = codes[i]
 				print "  { /* " curr_code " */"
