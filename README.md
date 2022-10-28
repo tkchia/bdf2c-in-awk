@@ -15,6 +15,7 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 | `S=1`           | Output 16-bit code points (`char16_t`), not 32-bit ones (`char32_t`).  This implies `SP=0` (see below).
 | `D=1`           | Output an array of differences between code points and glyph positions — which should be easier to compress, but just as searchable — instead of an array of code points.
 | `SPARSE=1`      | Output only a single sparse array of glyphs, indexed by code point.
+| `COSMO=1`       | In the output, do not `#include` standard headers such as `<inttypes.h>`.
 |                 |
 | `N=`_font-name_ | Set the font name to use when defining the C constants.  _font-name_ should comprise C identifier characters.
 | `X=`_prefix_    | Prefix for externally visible C identifiers.  _prefix should comprise C identifier characters.
