@@ -98,6 +98,28 @@ function hex(digits, \
 	return value
 }
 
+function help()
+{
+	print "bdf2c.awk -- convert .bdf font files to C modules or headers" \
+	      >"/dev/stderr"
+	print "  https://gitlab.com/tkchia/bdf2c-in-awk" >"/dev/stderr"
+	print "usage:" >"/dev/stderr"
+	print "  bdf2c.awk [(options)] [(in.bdf) ...] [> (out.c)]" \
+	      >"/dev/stderr"
+	print "  bdf2c.awk H=1 [(options)] [(in.bdf) ...] [> (out.h)]" \
+	      >"/dev/stderr"
+	error("invalid arguments")
+}
+
+function init_stdin()
+{
+	if (ARGC > 1)
+		return
+	"tty 2>/dev/null" | getline
+	if ($0 ~ /^\/dev\//)
+		help()
+}
+
 function do_init_cp437_map(u1, u2, u3, u4)
 {
 	is_cp437[hex(u1)] = is_cp437[hex(u2)] = 1
@@ -187,6 +209,7 @@ function tidy_args( \
 }
 
 BEGIN {
+	init_stdin()
 	init_cp437_map()
 	err_msg = ""
 	n_codes = 0
