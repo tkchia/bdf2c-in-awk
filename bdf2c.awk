@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# Copyright (c) 2020--2022 TK Chia
+# Copyright (c) 2020--2025 TK Chia
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -102,7 +102,7 @@ function help()
 {
 	print "bdf2c.awk -- convert .bdf font files to C modules or headers" \
 	      >"/dev/stderr"
-	print "  https://gitlab.com/tkchia/bdf2c-in-awk" >"/dev/stderr"
+	print "  https://codeberg.org/tkchia/bdf2c-in-awk" >"/dev/stderr"
 	print "usage:" >"/dev/stderr"
 	print "  bdf2c.awk [(options)] [(in.bdf) ...] [> (out.c)]" \
 	      >"/dev/stderr"
@@ -287,6 +287,11 @@ BEGIN {
 }
 
 /^[ \t]*BBX[ \t]+/ {
+	curr_width = $2 + 0
+	if (curr_width == 0)
+		error("bitmap width bogus")
+	if (curr_width > 8)
+		error("bitmap is too wide!")
 	curr_height = $3 + 0
 	if (curr_height == 0)
 		error("bitmap height bogus")
