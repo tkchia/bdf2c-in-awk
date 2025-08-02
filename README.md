@@ -1,6 +1,6 @@
 # BDF to C in AWK
 
-This is a simplistic [AWK](http://awklang.org/) program, to convert one or more [Adobe BDF](https://www.adobe.com/content/dam/Adobe/en/devnet/font/pdfs/5005.BDF_Spec.pdf) font files (`.bdf`) for an 8 × \_\_ font, into a C module source file (`.c`) or a C header file (`.h`).  The output goes to stdout.
+This is a simplistic [AWK](http://awklang.org/) program, to convert one or more [Adobe BDF](https://www.adobe.com/content/dam/Adobe/en/devnet/font/pdfs/5005.BDF_Spec.pdf) font files (`.bdf`) for a bitmap font, into a C module source file (`.c`) or a C header file (`.h`).  The output goes to stdout.
 
 On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, along with a matching array of glyphs.
 

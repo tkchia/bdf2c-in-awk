@@ -213,6 +213,8 @@ BEGIN {
 	init_cp437_map()
 	err_msg = ""
 	n_codes = 0
+	max_width = 0
+	max_width_bytes = 0
 	max_height = 0
 	comments = ""
 	max_code = 0
@@ -265,15 +267,23 @@ BEGIN {
 /^[ \t]*[0123456789abcdefABCDEF]+[ \t]*$/ {
 	if (rows_left) {
 		rows_left -= 1
-		if (length($1) != 2)
+		if (length($1) != 2 * curr_width_bytes)
 			error("bitmap too wide or too narrow")
-		bits = hex($1)
 		line = " */\n"
-		for (i = 0; i < 8; i += 1) {
-			line = (bits % 2 ? "#" : ".") line
-			bits = int(bits / 2)
+		for (k = 2 * curr_width_bytes; k != 0; k -= 2) {
+			frag = substr($1, k - 1, 2)
+			bits = hex(frag)
+			for (i = 0; i < 8; i += 1) {
+				line = (bits % 2 ? "#" : ".") line
+				bits = int(bits / 2)
+			}
 		}
-		line = "    0x" tolower($1) ", /* " line
+		line = "}, /* " line
+		for (k = 2 * curr_width_bytes; k != 0; k -= 2) {
+			frag = substr($1, k - 1, 2)
+			line = "0x" tolower(frag) ", " line
+		}
+		line = "    { " line
 		curr_bitmap = curr_bitmap line
 		next
 	}
@@ -290,8 +300,11 @@ BEGIN {
 	curr_width = $2 + 0
 	if (curr_width == 0)
 		error("bitmap width bogus")
-	if (curr_width > 8)
-		error("bitmap is too wide!")
+	curr_width_bytes = int((curr_width + 7) / 8)
+	if (curr_width > max_width) {
+		max_width = curr_width
+		max_width_bytes = curr_width_bytes
+	}
 	curr_height = $3 + 0
 	if (curr_height == 0)
 		error("bitmap height bogus")
@@ -301,6 +314,8 @@ BEGIN {
 }
 
 /^[ \t]*BITMAP[ \t]*$/ {
+	if (curr_width == 0)
+		error("bitmap width undefined")
 	if (curr_height == 0)
 		error("bitmap height undefined")
 	rows_left = curr_height
@@ -383,7 +398,7 @@ END {
 		N = "default"
 	tidy_args()
 	print "/* ****** AUTOMATICALLY GENERATED ******"
-	print " * by bdf2c-in-awk  https://gitlab.com/tkchia/bdf2c-in-awk"
+	print " * by bdf2c-in-awk  https://codeberg.org/tkchia/bdf2c-in-awk"
 	print " *"
 	print " * Command line arguments:"
 	print " *" args
@@ -412,14 +427,17 @@ END {
 				print "#include <uchar.h>"
 		}
 		print "#define FONT_" toupper(N) "_GLYPHS " n_codes
-		print "#define FONT_" toupper(N) "_WIDTH 8"
+		print "#define FONT_" toupper(N) "_WIDTH " max_width
+		print "#define FONT_" toupper(N) "_WIDTH_BYTES " \
+		      max_width_bytes
 		print "#define FONT_" toupper(N) "_HEIGHT " max_height
 		if (SPARSE) {
 			print "#define FONT_" toupper(N) "_DIRECT_OFFSET " \
 			      min_code
 			print "extern const uint8_t " X "font_" N "_direct[" \
 						    (max_code - min_code + 1) \
-						    "][" max_height "];"
+						    "][" max_height \
+						    "][" max_width_bytes "];"
 		} else {
 			if (D)
 				print "extern const " code_type " " \
@@ -431,7 +449,8 @@ END {
 						      n_codes "];"
 			print "extern const uint8_t " \
 				  X "font_" N "_data[" n_codes "][" \
-						       max_height "];"
+						       max_height "][" \
+						       max_width_bytes "];"
 		}
 		print "#endif"
 	} else {
@@ -440,7 +459,8 @@ END {
 		if (SPARSE) {
 			print "const uint8_t " X "font_" N "_direct[" \
 					       (max_code - min_code + 1) "][" \
-					       max_height "] = {"
+					       max_height "][" \
+					       max_width_bytes "] = {"
 			for (i = 1; i <= n_codes; i += 1) {
 				curr_code = codes[i]
 				print "  [" (curr_code - min_code) \
@@ -449,8 +469,8 @@ END {
 			}
 			print "};"
 		} else {
+			print "#include <uchar.h>"
 			if (D) {
-				print "#include <uchar.h>"
 				print "const " code_type " " \
 				      X "font_" N "_code_glyph_diffs[" \
 						  n_codes "] = {"
@@ -466,7 +486,8 @@ END {
 				print "};"
 			}
 			print "const uint8_t " X "font_" N "_data[" n_codes \
-					       "][" max_height "] = {"
+					       "][" max_height \
+					       "][" max_width_bytes "] = {"
 			for (i = 1; i <= n_codes; i += 1) {
 				curr_code = codes[i]
 				print "  { /* " curr_code " */"
