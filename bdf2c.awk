@@ -208,6 +208,14 @@ function tidy_args( \
 	}
 }
 
+function sanitize_comment(comm)
+{
+	gsub(/\\[\*\/]/, "\\\\&", comm)
+	gsub(/\/\*/, "/\\*", comm)
+	gsub(/\*\//, "*\\/", comm)
+	return comm
+}
+
 BEGIN {
 	init_stdin()
 	init_cp437_map()
@@ -254,14 +262,12 @@ BEGIN {
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)$/ {
 	sub(/^[ \t]+/, "")
-	gsub(/\*\//, "*\\/")
-	comments = comments "\n * " $0
+	comments = comments "\n * " sanitize_comment($0)
 }
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)[ \t]/ {
 	sub(/^[ \t]+/, "")
-	gsub(/\*\//, "*\\/")
-	comments = comments "\n * " $0
+	comments = comments "\n * " sanitize_comment($0)
 }
 
 /^[ \t]*[0123456789abcdefABCDEF]+[ \t]*$/ {
@@ -407,8 +413,8 @@ END {
 		print " * Font information:" comments
 	}
 	if (C != "") {
+		C = sanitize_comment(C)
 		gsub(/\n/, "\n * + ", C)
-		gsub(/\*\//, "*\\/", C)
 		print " * "
 		print " * Extra comments:"
 		print " * + " C
