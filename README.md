@@ -13,6 +13,7 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 | --------------- | -------
 | `H=1`           | Output a header file (`.h`) with external references to the code points table and font data.  Default is to output a C source file (`.c`) with the actual data.
 | `S=1`           | Output 16-bit code points (`char16_t`), not 32-bit ones (`char32_t`).  This implies `SP=0` (see below).
+| `S=.5`          | Output 16-bit or 32-bit code points depending on the range of glyphs actually in the output.
 | `D=1`           | Output an array of differences between code points and glyph positions — which should be easier to compress, but just as searchable — instead of an array of code points.
 | `SPARSE=1`      | Output only a single sparse array of glyphs, indexed by code point.
 | `COSMO=1`       | In the output, do not `#include` standard headers such as `<inttypes.h>`.  This is for compatibility with the [Cosmopolitan](https://github.com/jart/cosmopolitan) project.

@@ -248,7 +248,7 @@ BEGIN {
 	if (PUA == "")
 		PUA = 1
 	PUA += 0
-	if (S)
+	if (S >= 1)
 		SP = 0
 	else {
 		if (SP == "")
@@ -420,7 +420,9 @@ END {
 		print " * + " C
 	}
 	print " */"
-	if (S)
+	if (S >= 1)
+		code_type = "char16_t"
+	else if (S > 0 && max_code <= hex("ffff"))
 		code_type = "char16_t"
 	else
 		code_type = "char32_t"
