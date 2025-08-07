@@ -238,6 +238,36 @@ function sanitize_comment(comm)
   return comm
 }
 
+function find_ranges( \
+		     i, j, start, code)
+{
+  j = 0
+  c0 = c1 = -31337
+  for (i = 1; i <= n_codes; i += 1)
+    {
+      code = codes[i]
+      if (code != c1 + 1)
+	{
+	  if (c0 >= 0)
+	    {
+	      j += 1
+	      range_c0[j] = c0  # starting code point
+	      range_g0[j] = g0  # starting glyph index
+	    }
+	  c0 = code
+	  g0 = i - 1
+	}
+      c1 = code
+    }
+  if (start >= 0)
+    {
+      j += 1
+      range_c0[j] = c0
+      range_g0[j] = g0
+    }
+  n_ranges = j
+}
+
 BEGIN {
   init_stdin()
   init_cp437_map()
@@ -256,8 +286,11 @@ BEGIN {
   H += 0
   S += 0
   D += 0
+  R += 0
   SPARSE += 0
   COSMO += 0
+  if (D && R)
+    error("cannot enable D and R options together")
   if (NONASCII == "")
     NONASCII = 1
   NONASCII += 0
@@ -477,6 +510,12 @@ END {
   else
     code_type = "char32_t"
 
+  if (R)
+    {
+      find_ranges()
+      range_type = "struct { " code_type " c0, g0; }"
+    }
+
   if (H)
     {
       print "#ifndef H_FONT_" toupper(N)
@@ -489,6 +528,8 @@ END {
 	}
 
       print "#define FONT_" toupper(N) "_GLYPHS " n_codes
+      if (R)
+	print "#define FONT_" toupper(N) "_CODE_RANGES " n_ranges
       print "#define FONT_" toupper(N) "_WIDTH " max_width
       print "#define FONT_" toupper(N) "_WIDTH_BYTES " max_width_bytes
       print "#define FONT_" toupper(N) "_HEIGHT " max_height
@@ -501,7 +542,10 @@ END {
 	}
       else
 	{
-	  if (D)
+	  if (R)
+	    print "extern const " range_type " " \
+		  X "font_" N "_code_range_starts[" n_ranges "];"
+	  else if (D)
 	    print "extern const " code_type " " \
 		  X "font_" N "_code_glyph_diffs[" n_codes "];"
 	  else
@@ -533,7 +577,15 @@ END {
       else
 	{
 	  print "#include <uchar.h>"
-	  if (D)
+	  if (R)
+	    {
+	      print "const " range_type " " \
+		    X "font_" N "_code_range_starts[" n_ranges "] = {"
+	      for (i = 1; i <= n_ranges; i += 1)
+		print "  { " range_c0[i] ", " range_g0[i] " },"
+	      print "};"
+	    }
+	  else if (D)
 	    {
 	      print "const " code_type " " X "font_" N "_code_glyph_diffs" \
 		    "[" n_codes "] = {"
