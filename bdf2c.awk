@@ -268,6 +268,37 @@ function find_ranges( \
   n_ranges = j
 }
 
+function decl_specs( \
+		    specs, xspecs, cscn)
+{
+  xspecs = ""
+  if (SCN != "")
+    {
+      cscn = SCN
+      gsub(/\\/, "\\\\", cscn)
+      gsub(/"/, "\\\"", cscn)
+      xspecs = "\n__attribute__ ((__section__ (\"" cscn "\")))"
+    }
+  if (HID)
+    xspecs = xspecs "\n__attribute__ ((__visibility__ (\"hidden\")))"
+
+  specs = "FONT_" toupper (N) "_DECL_SPECS"
+  print "#ifndef " specs
+  if (specs == "")
+    print "# define " specs
+  else
+    {
+      gsub(/\n/, " \\\n\t   ", xspecs)
+      print "# ifdef __GNUC__"
+      print "#   define " specs xspecs
+      print "# else"
+      print "#   define " specs
+      print "# endif"
+    }
+  print "#endif"
+  return specs
+}
+
 BEGIN {
   init_stdin()
   init_cp437_map()
@@ -289,6 +320,7 @@ BEGIN {
   R += 0
   SPARSE += 0
   COSMO += 0
+  HID += 0
   if (D && R)
     error("cannot enable D and R options together")
   if (NONASCII == "")
@@ -527,6 +559,7 @@ END {
 	    print "#include <uchar.h>"
 	}
 
+      specs = decl_specs()
       print "#define FONT_" toupper(N) "_GLYPHS " n_codes
       if (R)
 	print "#define FONT_" toupper(N) "_CODE_RANGES " n_ranges
@@ -536,22 +569,23 @@ END {
       if (SPARSE)
 	{
 	  print "#define FONT_" toupper(N) "_DIRECT_OFFSET " min_code
-	  print "extern const uint8_t " X "font_" N "_direct" \
+	  print "extern const " specs " uint8_t " X "font_" N "_direct" \
 		"[" (max_code - min_code + 1) "]" \
 		"[" max_height "][" max_width_bytes "];"
 	}
       else
 	{
 	  if (R)
-	    print "extern const " range_type " " \
+	    print "extern const " specs " " range_type " " \
 		  X "font_" N "_code_range_starts[" n_ranges "];"
 	  else if (D)
-	    print "extern const " code_type " " \
+	    print "extern const " specs " " code_type " " \
 		  X "font_" N "_code_glyph_diffs[" n_codes "];"
 	  else
-	    print "extern const " code_type " " X "font_" N "_code_points" \
-		  "[" n_codes "];"
-	  print "extern const uint8_t " X "font_" N "_data[" n_codes "]" \
+	    print "extern const " specs " " \
+		  code_type " " X "font_" N "_code_points[" n_codes "];"
+	  print "extern const " specs \
+		" uint8_t " X "font_" N "_data[" n_codes "]" \
 		"[" max_height "][" max_width_bytes "];"
 	}
       print "#endif"
@@ -561,9 +595,11 @@ END {
       if (!COSMO)
 	print "#include <inttypes.h>"
 
+      specs = decl_specs()
+
       if (SPARSE)
 	{
-	  print "const uint8_t " X "font_" N "_direct" \
+	  print "const " specs " uint8_t " X "font_" N "_direct" \
 		"[" (max_code - min_code + 1) "]" \
 		"[" max_height "][" max_width_bytes "] = {"
 	  for (i = 1; i <= n_codes; i += 1)
@@ -579,7 +615,7 @@ END {
 	  print "#include <uchar.h>"
 	  if (R)
 	    {
-	      print "const " range_type " " \
+	      print "const " specs " " range_type " " \
 		    X "font_" N "_code_range_starts[" n_ranges "] = {"
 	      for (i = 1; i <= n_ranges; i += 1)
 		print "  { " range_c0[i] ", " range_g0[i] " },"
@@ -587,7 +623,8 @@ END {
 	    }
 	  else if (D)
 	    {
-	      print "const " code_type " " X "font_" N "_code_glyph_diffs" \
+	      print "const " specs " " \
+		    code_type " " X "font_" N "_code_glyph_diffs" \
 		    "[" n_codes "] = {"
 	      for (i = 1; i <= n_codes; i += 1)
 		print "  " (codes[i] - (i - 1)) ","
@@ -595,13 +632,14 @@ END {
 	    }
 	  else
 	    {
-	      print "const " code_type " " X "font_" N "_code_points" \
+	      print "const " specs " " \
+		    code_type " " X "font_" N "_code_points" \
 		    "[" n_codes "] = {"
 	      for (i = 1; i <= n_codes; i += 1)
 		print "  " codes[i] ","
 	      print "};"
 	    }
-	  print "const uint8_t " X "font_" N "_data[" n_codes "]" \
+	  print "const " specs " uint8_t " X "font_" N "_data[" n_codes "]" \
 		"[" max_height "][" max_width_bytes "] = {"
 	  for (i = 1; i <= n_codes; i += 1)
 	    {

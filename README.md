@@ -21,6 +21,8 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 |                 |
 | `N=`_font-name_ | Set the font name to use when defining the C constants.  _font-name_ should comprise C identifier characters.
 | `X=`_prefix_    | Prefix for externally visible C identifiers.  _prefix_ should comprise C identifier characters.
+| `SCN=`_section_ | Add a GNU-style `__attribute__` to place the font data in the given object file section.
+| `HID=1`         | Add a GNU-style `__attribute__` to specify ["hidden visibility"](https://gcc.gnu.org/wiki/Visibility) for the font data.  This is useful if the font will be part of a code library, and will only be used internally within the library.
 | `C=`_comments_  | Extra comments to include in C code.
 |                 |
 | `NONASCII=0`    | Exclude all glyphs not in the printable ASCII range.
