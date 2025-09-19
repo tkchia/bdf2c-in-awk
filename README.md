@@ -17,7 +17,7 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 | `D=1`           | Output an array of differences between code points and glyph positions — which should be easier to compress, but just as searchable — instead of an array of code points.
 | `R=1`           | Output an array of code point ranges, instead of an array of code points.
 | `SPARSE=1`      | Output only a single sparse array of glyphs, indexed by code point.
-| `COSMO=1`       | In the output, do not `#include` standard headers such as `<inttypes.h>`.  This is for compatibility with the [Cosmopolitan](https://github.com/jart/cosmopolitan) project.
+| `COSMO=1`       | In the output, do not `#include` standard headers such as `<stdint.h>`.  This is for compatibility with the [Cosmopolitan](https://github.com/jart/cosmopolitan) project.
 |                 |
 | `N=`_font-name_ | Set the font name to use when defining the C constants.  _font-name_ should comprise C identifier characters.
 | `X=`_prefix_    | Prefix for externally visible C identifiers.  _prefix_ should comprise C identifier characters.

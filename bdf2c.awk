@@ -323,6 +323,8 @@ BEGIN {
   HID += 0
   if (D && R)
     error("cannot enable D and R options together")
+  if ((D || R) && SPARSE)
+    error("cannot enable D-or-R and SPARSE options together")
   if (NONASCII == "")
     NONASCII = 1
   NONASCII += 0
@@ -554,7 +556,7 @@ END {
       print "#define H_FONT_" toupper(N)
       if (!COSMO)
 	{
-	  print "#include <inttypes.h>"
+	  print "#include <stdint.h>"
 	  if (!SPARSE)
 	    print "#include <uchar.h>"
 	}
@@ -593,7 +595,7 @@ END {
   else
     {
       if (!COSMO)
-	print "#include <inttypes.h>"
+	print "#include <stdint.h>"
 
       specs = decl_specs()
 
