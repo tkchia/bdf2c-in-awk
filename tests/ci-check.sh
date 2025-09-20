@@ -42,11 +42,11 @@ for AWK in gawk mawk original-awk wak; do
   CSRC="$OUTDIR"/font.c
   CHDR="$OUTDIR"/font.h
   PROG="$OUTDIR"/main
-  rm -rf "$SRC" "$HDR"
   for WCHR in "" "S=.5" "S=1"; do
-    for OFMT in "" "D=1" "R=1" "SPARSE=1"; do
-      for CSET in "" "NONASCII=0"; do
-	for HID in "" "HID=1"; do
+    for CSET in "" "NONASCII=0"; do
+      for HID in "" "HID=1"; do
+	for OFMT in "" "D=1" "R=1" "SPARSE=1"; do
+	  rm -rf "$CSRC" "$CHDR"
 	  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" >"$CSRC"
 	  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT" >"$CHDR"
 	  for CC in gcc chibicc; do
@@ -55,7 +55,16 @@ for AWK in gawk mawk original-awk wak; do
 	    "$PROG"
 	  done
 	done
+	for OFMT in "D=1 R=1" "D=1 SPARSE=1" "R=1 SPARSE=1"; do
+	  # These commands should yield an error...
+	  if "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" \
+	      || "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT"; then
+	    echo "FAIL: did not reject bad options!" >&2
+	    exit 1
+	  fi
+	done
       done
     done
   done
 done
+rm -rf "$OUTDIR"
