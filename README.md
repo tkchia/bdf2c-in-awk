@@ -36,4 +36,4 @@ On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, alon
 
 ## License
 
-`bdf2c.awk` is distributed under the [3-clause BSD License](LICENSE).
+`bdf2c.awk` is distributed under the [Mozilla Public License 2.0](LICENSE).
