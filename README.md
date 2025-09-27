@@ -4,7 +4,7 @@ This is a simplistic [AWK](http://awklang.org/) program, to convert one or more 
 
 On default, `bdf2c.awk` outputs an array of `char32_t` Unicode code points, along with a matching array of glyphs.
 
-[![Check the build status.](https://ci.appveyor.com/api/projects/status/ygbwbk5ssc2d095i?svg=true)](https://ci.appveyor.com/project/tkchia/bdf2c-in-awk)
+[![(Check the build status.)](https://ci.appveyor.com/api/projects/status/ygbwbk5ssc2d095i/branch/master?svg=true)](https://ci.appveyor.com/project/tkchia/bdf2c-in-awk/branch/master)
 
 ## Usage
 
