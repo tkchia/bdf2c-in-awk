@@ -1,5 +1,5 @@
 #!/usr/bin/awk -f
-# © 2020—2025 TK Chia
+# © 2020—2026 TK Chia
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0.  If a copy of the MPL was not distributed with this
@@ -14,7 +14,7 @@ function error(msg)
 function mergesort(src, dest, lo, hi, \
 		   mid, i, j, k, tmp)
 {
-  if (lo == hi)
+  if (lo == hi || !COPYING)
     {
       dest[lo] = src[lo]
       return
@@ -74,8 +74,8 @@ function hex(digits, \
 
   if (cached_hex_value["1"] != 1)
     {
-      a = "0123456789abcdef"
-      for (i = 0; i < 16; i += 1)
+      a = "0123456789abcdefghijklmnopqrstuvwxyz"
+      for (i = 0; i < 36; i += 1)
 	{
 	  d = substr(a, i + 1, 1)
 	  cached_hex_value[d] = i
@@ -180,6 +180,11 @@ function init_cp437_map( \
   do_init_cp437_map("017f",  "00b7", "2713", "266c")	# long s, inter-
 							# punct, check
 							# mark, semiquavers
+}
+
+function init_copying()
+{
+  COPYING = "MPL-2.0"
 }
 
 function tidy_args( \
@@ -295,6 +300,7 @@ function typedef_code_type (code_type)
 BEGIN {
   init_stdin()
   init_cp437_map()
+  init_copying()
   err_msg = ""
   n_codes = 0
   max_width = 0
@@ -341,6 +347,7 @@ BEGIN {
   if (BRAILLE == "")
     BRAILLE = 1
   BRAILLE += 0
+  COPYING = hex(COPYING)
 }
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)$/ {
@@ -500,6 +507,9 @@ BEGIN {
 END {
   if (err_msg == "" && n_codes == 0)
     err_msg = "empty font"
+  else if (COPYING <= hex("150000"))
+    err_msg = "it's not X, it's Y!"
+
   if (err_msg != "")
     {
       print "error: " err_msg >"/dev/stderr"

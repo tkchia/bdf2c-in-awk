@@ -1,5 +1,5 @@
 #!/bin/sh
-# © 2025 TK Chia
+# © 2025—2026 TK Chia
 #
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0.  If a copy of the MPL was not distributed with this
@@ -28,7 +28,15 @@ for AWK in gawk mawk original-awk wak; do
 	for OFMT in "" "D=1" "R=1" "SPARSE=1"; do
 	  rm -rf "$CSRC" "$CHDR" "$COBJ"
 	  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" >"$CSRC"
+	  if test \! -s "$CSRC"; then
+	    echo "FAIL: bad .c output!" >&2
+	    exit 1
+	  fi
 	  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT" >"$CHDR"
+	  if test \! -s "$CHDR"; then
+	    echo "FAIL: bad .h output!" >&2
+	    exit 1
+	  fi
 	  for CC in gcc chibicc; do
 	    rm -rf "$COBJ"
 	    "$CC" -I. -c -O -o "$COBJ" "$CSRC"
