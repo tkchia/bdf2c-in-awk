@@ -100,6 +100,7 @@ function help()
   print "bdf2c.awk -- convert .bdf font files to C modules or headers" \
 	>"/dev/stderr"
   print "  https://codeberg.org/tkchia/bdf2c-in-awk" >"/dev/stderr"
+  print "  license: " COPYING >"/dev/stderr"
   print "usage:" >"/dev/stderr"
   print "  bdf2c.awk [(options)] [(in.bdf) ...] [> (out.c)]" \
 	>"/dev/stderr"
@@ -110,7 +111,7 @@ function help()
 
 function init_stdin()
 {
-  if (ARGC > 1)
+  if (ARGC > 1 || COPYING !~ /^[-.a-zA-Z0-9]+$/)
     return
   "tty 2>/dev/null" | getline
   if ($0 ~ /^\/dev\//)
@@ -298,9 +299,9 @@ function typedef_code_type (code_type)
 }
 
 BEGIN {
+  init_copying()
   init_stdin()
   init_cp437_map()
-  init_copying()
   err_msg = ""
   n_codes = 0
   max_width = 0
