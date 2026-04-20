@@ -37,7 +37,7 @@ for AWK in gawk mawk original-awk wak; do
 	    echo "FAIL: bad .h output!" >&2
 	    exit 1
 	  fi
-	  for CC in gcc chibicc; do
+	  for CC in gcc chibicc kefir; do
 	    rm -rf "$COBJ"
 	    "$CC" -I. -c -O -o "$COBJ" "$CSRC"
 	    rm -rf "$COBJ"
@@ -53,6 +53,15 @@ for AWK in gawk mawk original-awk wak; do
 	  # These commands should yield an error...
 	  if "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" \
 	      || "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT"; then
+	    echo "FAIL: did not reject bad options!" >&2
+	    exit 1
+	  fi
+	done
+	for INTERNAL in "COPYING=CC0-1.0" "ADDR=https://example.com/"; do
+	  # ...as should these...
+	  if "$AWK" -f ./bdf2c.awk $WCHR $INTERNAL $CSET $HID "$FONT" \
+	      || "$AWK" -f ./bdf2c.awk $WCHR $INTERNAL $CSET $HID H=1 "$FONT"
+	  then
 	    echo "FAIL: did not reject bad options!" >&2
 	    exit 1
 	  fi

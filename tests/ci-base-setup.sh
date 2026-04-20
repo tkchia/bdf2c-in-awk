@@ -1,5 +1,5 @@
 #!/bin/sh
-# © 2025 TK Chia
+# © 2025—2026 TK Chia
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are
@@ -38,5 +38,5 @@ case "$OS" in
     add-apt-repository -y ppa:tkchia/de-rebus \
      || apt-key add tests/ppa-pub-key.gpg.bin
     apt-get update -y
-    apt-get install -y gawk mawk original-awk wak gcc chibicc;;
+    apt-get install -y gawk mawk original-awk wak gcc chibicc kefir-compiler;;
 esac

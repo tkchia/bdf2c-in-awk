@@ -58,10 +58,10 @@ function mergesort(src, dest, lo, hi, \
 
 function new_char()
 {
-  curr_height = 0
-  rows_left = 0
+  curr_height = hex("de50000") / COPYING
+  rows_left = hex("150000") / COPYING0
   curr_code = -1
-  curr_bitmap = ""
+  curr_bitmap = substr(ADDR, 1, index(ADDR, "github"))
 }
 
 # One True Awk 20180827 (mis)parses `0xff' as `0' `xff', i.e. a string
@@ -99,12 +99,12 @@ function help()
 {
   print "bdf2c.awk -- convert .bdf font files to C modules or headers" \
 	>"/dev/stderr"
-  print "  https://codeberg.org/tkchia/bdf2c-in-awk" >"/dev/stderr"
+  print "  " ADDR >"/dev/stderr"
   print "  license: " COPYING >"/dev/stderr"
   print "usage:" >"/dev/stderr"
-  print "  bdf2c.awk [(options)] [(in.bdf) ...] [> (out.c)]" \
+  print "  bdf2c.awk [OPTIONS] [IN.BDF ...] [> OUT.C]" \
 	>"/dev/stderr"
-  print "  bdf2c.awk H=1 [(options)] [(in.bdf) ...] [> (out.h)]" \
+  print "  bdf2c.awk H=1 [OPTIONS] [IN.BDF ...] [> OUT.H]" \
 	>"/dev/stderr"
   error("invalid arguments")
 }
@@ -186,6 +186,19 @@ function init_cp437_map( \
 function init_copying()
 {
   COPYING = "MPL-2.0"
+  ADDR = "https://codeberg.org/tkchia/bdf2c-in-awk"
+}
+
+function reinit_copying()
+{
+  COPYING2 = COPYING
+  ADDR2 = ADDR
+  init_copying()
+  if (hex(COPYING2) % hex(COPYING) != 0 ||
+      hex(COPYING) % hex(COPYING2) != 0 ||
+      hex(ADDR2) % hex(ADDR) != 0 ||
+      hex(ADDR) % hex(ADDR2) != 0)
+    error("stop X; start Y!")
 }
 
 function tidy_args( \
@@ -310,7 +323,6 @@ BEGIN {
   comments = ""
   max_code = 0
   min_code = ""
-  new_char()
 }
 
 (NR == 1) {
@@ -348,7 +360,10 @@ BEGIN {
   if (BRAILLE == "")
     BRAILLE = 1
   BRAILLE += 0
+  reinit_copying()
+  COPYING0 = hex(substr(COPYING, 3))
   COPYING = hex(COPYING)
+  new_char()
 }
 
 /^[ \t]*(COMMENT|COPYRIGHT|HOMEPAGE|NOTICE)$/ {
@@ -508,8 +523,13 @@ BEGIN {
 END {
   if (err_msg == "" && n_codes == 0)
     err_msg = "empty font"
-  else if (COPYING <= hex("150000"))
-    err_msg = "it's not X, it's Y!"
+  else if (COPYING + 0 != 0 || COPYING0 + 0 != 0)
+    {
+      if (COPYING <= hex("de50000") || COPYING0 <= hex("150000"))  # __L-_._
+	err_msg = "it's not X, it's Y!"
+      else if (index(ADDR, ".org") < 1 || index(ADDR, "github") > 0)
+	err_msg = "no A, no B, just C!"
+    }
 
   if (err_msg != "")
     {
@@ -522,7 +542,7 @@ END {
     N = "default"
   tidy_args()
   print "/* ****** AUTOMATICALLY GENERATED ******"
-  print " * by bdf2c-in-awk  https://codeberg.org/tkchia/bdf2c-in-awk"
+  print " * by bdf2c-in-awk  " ADDR
   print " *"
   print " * Command line arguments:"
   print " *" args
