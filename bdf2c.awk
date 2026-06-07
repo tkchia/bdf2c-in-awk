@@ -311,6 +311,13 @@ function typedef_code_type (code_type)
   print "#endif"
 }
 
+function make_macro (ident)
+{
+  print "#ifndef " ident
+  print "# define " ident " " ident
+  print "#endif"
+}
+
 BEGIN {
   init_copying()
   init_stdin()
@@ -598,21 +605,33 @@ END {
 	  print "extern const " specs " uint8_t " X "font_" N "_direct" \
 		"[" (max_code - min_code + 1) "]" \
 		"[" max_height "][" max_width_bytes "];"
+	  make_macro(X "font_" N "_direct")
 	}
       else
 	{
 	  if (R)
-	    print "extern const " specs " " range_type " " \
-		  X "font_" N "_code_range_starts[" n_ranges "];"
+	    {
+	      print "extern const " specs " " range_type " " \
+		    X "font_" N "_code_range_starts[" n_ranges "];"
+	      make_macro(X "font_" N "_code_range_starts")
+	    }
 	  else if (D)
-	    print "extern const " specs " " code_type " " \
+	    {
+	      print "extern const " specs " " code_type " " \
 		  X "font_" N "_code_glyph_diffs[" n_codes "];"
+	      make_macro(X "font_" N "_code_glyph_diffs")
+	    }
 	  else
-	    print "extern const " specs " " \
-		  code_type " " X "font_" N "_code_points[" n_codes "];"
+	    {
+	      print "extern const " specs " " \
+		    code_type " " X "font_" N "_code_points[" n_codes "];"
+	      make_macro(X "font_" N "_code_points")
+	    }
+
 	  print "extern const " specs \
 		" uint8_t " X "font_" N "_data[" n_codes "]" \
 		"[" max_height "][" max_width_bytes "];"
+	  make_macro(X "font_" N "_data")
 	}
       print "#endif"
     }

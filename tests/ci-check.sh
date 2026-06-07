@@ -8,7 +8,29 @@
 # Script to do automated testing under AppVeyor CI (https://ci.appveyor.com/),
 # invoked by .appveyor.yml .
 
-set -e -x
+verbose () {
+  local out
+  if test x-o = x"$1"; then
+    out="$2"
+    shift 2
+    echo "$@ >$out" >&2
+    "$@" >"$out"
+  else
+    echo "$@" >&2
+    "$@"
+  fi
+}
+
+fail () {
+  echo "*** FAIL: $@ ***" >&2
+  exit 1
+}
+
+pass () {
+  echo "*** PASS: $@ ***" >&2
+}
+
+set -e
 OUTDIR=scratch
 rm -rf "$OUTDIR"
 mkdir "$OUTDIR"
@@ -26,48 +48,51 @@ for AWK in gawk mawk original-awk wak; do
     for CSET in "" "NONASCII=0"; do
       for HID in "" "HID=1"; do
 	for OFMT in "" "D=1" "R=1" "SPARSE=1"; do
-	  rm -rf "$CSRC" "$CHDR" "$COBJ"
-	  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" >"$CSRC"
+	  verbose rm -rf "$CSRC" "$CHDR" "$COBJ"
+	  verbose -o "$CSRC" \
+		  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT"
 	  if test \! -s "$CSRC"; then
-	    echo "FAIL: bad .c output!" >&2
-	    exit 1
+	    fail "bad .c output!"
 	  fi
-	  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT" >"$CHDR"
+	  verbose -o "$CHDR" \
+		  "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT"
 	  if test \! -s "$CHDR"; then
-	    echo "FAIL: bad .h output!" >&2
-	    exit 1
+	    fail "bad .h output!"
 	  fi
 	  for CC in gcc chibicc kefir; do
-	    rm -rf "$COBJ"
-	    "$CC" -I. -c -O -o "$COBJ" "$CSRC"
-	    rm -rf "$COBJ"
+	    verbose rm -rf "$COBJ"
+	    verbose "$CC" -I. -c -O -o "$COBJ" "$CSRC"
+	    verbose rm -rf "$COBJ"
 	    # As of writing (Sep 2025), chibicc knows about -ffreestanding
 	    # but ignores it...
-	    "$CC" -I. -c -O -ffreestanding -o "$COBJ" "$CSRC"
-	    rm -rf "$PROG"
-	    "$CC" -I. -DCHDR="\"$CHDR\"" -O -o "$PROG" tests/main.c "$CSRC"
-	    "$PROG"
+	    verbose "$CC" -I. -c -O -ffreestanding -o "$COBJ" "$CSRC"
+	    verbose rm -rf "$PROG"
+	    verbose "$CC" -I. -DCHDR="\"$CHDR\"" -O -o "$PROG" \
+		    tests/main.c "$CSRC"
+	    verbose "$PROG"
 	  done
 	done
 	for OFMT in "D=1 R=1" "D=1 SPARSE=1" "R=1 SPARSE=1"; do
 	  # These commands should yield an error...
-	  if "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" \
-	      || "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 "$FONT"; then
-	    echo "FAIL: did not reject bad options!" >&2
-	    exit 1
+	  if verbose "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID "$FONT" \
+	      || verbose "$AWK" -f ./bdf2c.awk $WCHR $OFMT $CSET $HID H=1 \
+				"$FONT"; then
+	    fail "did not reject bad options!"
 	  fi
+	  pass "bad options rejected as expected"
 	done
 	for INTERNAL in "COPYING=CC0-1.0" "ADDR=https://example.com/"; do
 	  # ...as should these...
-	  if "$AWK" -f ./bdf2c.awk $WCHR $INTERNAL $CSET $HID "$FONT" \
-	      || "$AWK" -f ./bdf2c.awk $WCHR $INTERNAL $CSET $HID H=1 "$FONT"
-	  then
-	    echo "FAIL: did not reject bad options!" >&2
-	    exit 1
+	  if verbose "$AWK" -f ./bdf2c.awk $WCHR $INTERNAL $CSET $HID "$FONT" \
+	      || verbose "$AWK" -f ./bdf2c.awk $WCHR $INTERNAL $CSET $HID H=1 \
+				"$FONT"; then
+	    fail "FAIL: did not reject bad options!"
 	  fi
+	  pass "bad options rejected as expected"
 	done
       done
     done
   done
 done
-rm -rf "$OUTDIR"
+verbose rm -rf "$OUTDIR"
+pass ✌️

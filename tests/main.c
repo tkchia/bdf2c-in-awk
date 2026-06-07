@@ -1,4 +1,4 @@
-/* © 2025 TK Chia
+/* © 2025—2026 TK Chia
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -30,6 +30,11 @@
 # include CHDR
 #else
 # include "font.h"
+#endif
+
+/* TODO: more checks! */
+#if ! defined font_default_direct && ! defined font_default_data
+# error
 #endif
 
 int
