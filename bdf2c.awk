@@ -593,7 +593,10 @@ END {
 	}
 
       specs = decl_specs()
-      print "#define FONT_" toupper(N) "_GLYPHS " n_codes
+      if (SPARSE)
+	print "#define FONT_" toupper(N) "_GLYPHS " (max_code - min_code + 1)
+      else
+	print "#define FONT_" toupper(N) "_GLYPHS " n_codes
       if (R)
 	print "#define FONT_" toupper(N) "_CODE_RANGES " n_ranges
       print "#define FONT_" toupper(N) "_WIDTH " max_width

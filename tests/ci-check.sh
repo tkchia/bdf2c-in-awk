@@ -67,7 +67,10 @@ for AWK in gawk mawk original-awk wak; do
 	    # but ignores it...
 	    verbose "$CC" -I. -c -O -ffreestanding -o "$COBJ" "$CSRC"
 	    verbose rm -rf "$PROG"
-	    verbose "$CC" -I. -DCHDR="\"$CHDR\"" -O -o "$PROG" \
+	    DCSET=
+	    if test "NONASCII=0" = "$CSET"
+	      then DCSET=-DASCII; fi
+	    verbose "$CC" -I. -DCHDR="\"$CHDR\"" $DCSET -O -o "$PROG" \
 		    tests/main.c "$CSRC"
 	    verbose "$PROG"
 	  done
