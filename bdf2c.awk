@@ -98,14 +98,14 @@ function hex(digits, \
 function help()
 {
   print "bdf2c.awk -- convert .bdf font files to C modules or headers" \
-	>"/dev/stderr"
-  print "  " ADDR >"/dev/stderr"
-  print "  license: " COPYING >"/dev/stderr"
-  print "usage:" >"/dev/stderr"
+	>>"/dev/stderr"
+  print "  " ADDR >>"/dev/stderr"
+  print "  license: " COPYING >>"/dev/stderr"
+  print "usage:" >>"/dev/stderr"
   print "  bdf2c.awk [OPTIONS] [IN.BDF ...] [> OUT.C]" \
-	>"/dev/stderr"
+	>>"/dev/stderr"
   print "  bdf2c.awk H=1 [OPTIONS] [IN.BDF ...] [> OUT.H]" \
-	>"/dev/stderr"
+	>>"/dev/stderr"
   error("invalid arguments")
 }
 
@@ -540,7 +540,7 @@ END {
 
   if (err_msg != "")
     {
-      print "error: " err_msg >"/dev/stderr"
+      print "error: " err_msg >>"/dev/stderr"
       exit 1
     }
 
